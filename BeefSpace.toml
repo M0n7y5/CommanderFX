@@ -1,0 +1,6 @@
+FileVersion = 1
+Projects = {CommanderFX = {Path = "CommanderFX"}, "CommanderRX.Test" = {Path = "CommanderRX.Test"}}
+Unlocked = ["corlib"]
+
+[Workspace]
+StartupProject = "CommanderRX.Test"

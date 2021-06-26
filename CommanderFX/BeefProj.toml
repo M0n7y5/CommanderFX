@@ -1,0 +1,6 @@
+FileVersion = 1
+
+[Project]
+Name = "CommanderFX"
+TargetType = "BeefLib"
+StartupObject = "CommanderFX.Program"

@@ -1,0 +1,11 @@
+FileVersion = 1
+Dependencies = {corlib = "*", CommanderFX = "*"}
+
+[Project]
+Name = "CommanderRX.Test"
+StartupObject = "CommanderRX.Test.Program"
+
+[[Configs.Debug.Win64.DistinctOptions]]
+Filter = ""
+BfOptimizationLevel = "OgPlus"
+EmitDebugInfo = "Yes"
