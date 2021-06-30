@@ -6,9 +6,12 @@ using System.Diagnostics;
 using CommanderFX.Attributes;
 using System.Collections;
 using CommanderFX.Converters;
+using CommanderFX.Enums;
 using static System.Reflection.MethodInfo;
 namespace CommanderFX
 {
+
+	//TODO: Implement method overload support
 	class Commander
 	{
 		private Dictionary<StringView, Command> ResolvedCommands = new .();
@@ -124,13 +127,22 @@ namespace CommanderFX
 			return this;
 		}
 
-		public Commander AddDependency<T>(T dep)
+		//TODO: Implement dependency injection
+		public Commander AddSingletonDep<T>(T dep)
+		{
+			return this;
+		}
+		
+		//TODO: Implement dependency injection
+		public Commander AddTransientDep<T>(T dep)
 		{
 			return this;
 		}
 
-		public Result<void, CallError> ProccessCommandInput(StringView input)
+		public Result<void, InvokeError> ProccessCommandInput(StringView input)
 		{
+			//TODO: Handle calling error internally
+
 			var splitEnum = input.Split(' ');
 			if (let cmdName = splitEnum.GetNext())
 			{
@@ -147,16 +159,19 @@ namespace CommanderFX
 					}
 
 					if (argsCount != argsStr.Count)
-						return .Err;// Invalid number of arguments from user
+						return .Err(.InvalidNumberOfArguments(argsCount, argsStr.Count));// Invalid number of arguments from user
 
 					if (argsCount == 0)
-						return cmd(null);
+						if (cmd(null) case .Err(let err))
+							return .Err(.CallingError(err));
+						else
+							return .Ok;
 
 					Variant[] parsedArgs = scope Variant[cmd.Arguments.Count];
-					defer // deferred execution
+					defer// deferred execution
 					{
-						for(var pArg in parsedArgs)
-							pArg.Dispose(); // dispose it right away
+						for (var pArg in parsedArgs)
+							pArg.Dispose();// dispose it right away
 						// cuz if object is bigger than int then its allocated
 						// and owned by us
 					}
@@ -172,18 +187,23 @@ namespace CommanderFX
 							{
 								parsedArgs[idx++] = converted;
 							}
+							else
+								return .Err(.ParsingError(idx, str));
 						}
 						else
-							Runtime.FatalError("Argument type is not supported. Custom argument converter needed!");
+							return .Err(.NoConverterForArgumentType(arg.Type.GetFullName(.. scope String())));
 					}
 
-					return cmd.Invoke(parsedArgs);
+					if (cmd(parsedArgs) case .Err(let err))
+						return .Err(.CallingError(err));
+					else
+						return .Ok;
 				}
 				else
-					return .Err;// Cmd doesnt exist
+					return .Err(.CommandNotFound(cmdName));// Cmd doesn't exist
 			}
 			else
-				return .Err;// empty cmdname
+				return .Err(.EmptyInput);// empty cmdname
 		}
 
 	}

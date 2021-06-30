@@ -3,6 +3,7 @@ using CommanderFX;
 using CommanderFX.Attributes;
 using System.Collections;
 using CommanderFX.Converters;
+using CommanderFX.Entities;
 
 namespace CommanderRX.Test
 {
@@ -39,6 +40,7 @@ namespace CommanderRX.Test
 	{
 		public static int Main(String[] args)
 		{
+
 			let cmder = scope Commander();
 
 			cmder.RegisterModule<ServerCommands>();
