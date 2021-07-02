@@ -5,7 +5,7 @@ using System.Collections;
 using CommanderFX.Converters;
 using CommanderFX.Entities;
 
-namespace CommanderRX.Test
+namespace CommanderFX.Test
 {
 	class ServerCommands
 	{
@@ -33,25 +33,44 @@ namespace CommanderRX.Test
 		public void Sum(int a, int b)
 		{
 			Console.WriteLine($"Sum: {a} + {b} = {a + b}");
-		}	
+		}
+
+		[Command]
+		public void Sum(int32 a, int32 b)
+		{
+			Console.WriteLine($"Sum: {a} + {b} = {a + b}");
+		}
 	}
 
 	class Program
 	{
 		public static int Main(String[] args)
 		{
-
 			let cmder = scope Commander();
 
 			cmder.RegisterModule<ServerCommands>();
+			//cmder.RegisterModule<ServerCommands>();
 
 			cmder.ProccessCommandInput("Update");
 			cmder.ProccessCommandInput("Restart");
 			cmder.ProccessCommandInput("Say AMOGUS!");
 			cmder.ProccessCommandInput("Sum 46 158");
 
+			if(cmder.ProccessCommandInput("Char c") case .Err(let err))
+			{
+				Console.WriteLine(err);
+			}
+
+			//cmder.ProccessCommandInput("InvalidCmd");
+
 			Console.Read();
 			return 0;
+		}
+
+		[Test]
+		public static void T_CommandRegister()
+		{
+
 		}
 	}
 
@@ -60,11 +79,9 @@ namespace CommanderRX.Test
 	{
 		int i;
 
-		[AlwaysInclude] 
+		[AlwaysInclude]
 		public this()
 		{
-
 		}
 	}
-
 }

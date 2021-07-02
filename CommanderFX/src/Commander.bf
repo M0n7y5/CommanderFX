@@ -71,6 +71,8 @@ namespace CommanderFX
 				Modules.Add(hash, mod);
 			}
 
+			//TODO: handle command duplication
+
 			for (let method in type.GetMethods())
 			{
 				if (let attr = method.GetCustomAttribute<CommandAttribute>())
@@ -116,8 +118,8 @@ namespace CommanderFX
 
 							cmd.Arguments.Add(cmdArg);
 						}
-
-						ResolvedCommands.Add(cmd.Name, cmd);
+						// TODO: handle duplicates here
+						Debug.Assert(!ResolvedCommands.TryAdd(cmd.Name, cmd), "Duplicate commands not supported yet!");
 					}
 				}
 				else
@@ -128,16 +130,16 @@ namespace CommanderFX
 		}
 
 		//TODO: Implement dependency injection
-		public Commander AddSingletonDep<T>(T dep)
+		/*public Commander AddSingletonDep<T>(T dep)
 		{
 			return this;
 		}
 		
 		//TODO: Implement dependency injection
-		public Commander AddTransientDep<T>(T dep)
+		public Commander AddTransientDep<T>()
 		{
 			return this;
-		}
+		}*/
 
 		public Result<void, InvokeError> ProccessCommandInput(StringView input)
 		{
@@ -159,7 +161,8 @@ namespace CommanderFX
 					}
 
 					if (argsCount != argsStr.Count)
-						return .Err(.InvalidNumberOfArguments(argsCount, argsStr.Count));// Invalid number of arguments from user
+						return .Err(.InvalidNumberOfArguments(argsCount, argsStr.Count));// Invalid number of arguments
+					// from user
 
 					if (argsCount == 0)
 						if (cmd(null) case .Err(let err))
@@ -173,7 +176,7 @@ namespace CommanderFX
 						for (var pArg in parsedArgs)
 							pArg.Dispose();// dispose it right away
 						// cuz if object is bigger than int then its allocated
-						// and owned by us
+						// and owned by us (and thats gay ngl)
 					}
 
 					var idx = 0;
@@ -191,7 +194,9 @@ namespace CommanderFX
 								return .Err(.ParsingError(idx, str));
 						}
 						else
-							return .Err(.NoConverterForArgumentType(arg.Type.GetFullName(.. scope String())));
+						{
+							return .Err(.NoConverterForArgumentType(arg.Type));
+						}
 					}
 
 					if (cmd(parsedArgs) case .Err(let err))
