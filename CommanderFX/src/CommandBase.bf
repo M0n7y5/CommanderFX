@@ -1,13 +1,13 @@
 using System;
+using CommanderFX.Entities;
 namespace CommanderFX
 {
-	[Reflect(.All)]
 	abstract class CommandBase
 	{
-		[AlwaysInclude]
+		public CommandContext ctx { get; private set;};
+
 		public this()
 		{
-
 		}
 	}
 }

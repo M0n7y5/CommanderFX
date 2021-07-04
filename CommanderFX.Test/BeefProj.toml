@@ -3,7 +3,7 @@ Dependencies = {corlib = "*", CommanderFX = "*"}
 
 [Project]
 Name = "CommanderFX.Test"
-TargetType = "BeefTest"
+TargetType = "BeefLib"
 StartupObject = "CommanderFX.Test.Program"
 
 [Configs.Debug.Win64]

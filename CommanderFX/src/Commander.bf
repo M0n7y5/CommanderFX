@@ -41,12 +41,12 @@ namespace CommanderFX
 			delete Modules;
 		}
 
-		public Commander RegisterModule<T>() where T : new, class
+		public Commander RegisterModule<T>() where T : new, class, CommandBase
 		{
 			return RegisterModule<T>(null);
 		}
 
-		public Commander RegisterModule<T>(T module) where T : new, class
+		public Commander RegisterModule<T>(T module) where T : new, class, CommandBase
 		{
 			let type = typeof(T);
 			let typeName = type.GetFullName(.. scope String());
@@ -119,7 +119,9 @@ namespace CommanderFX
 							cmd.Arguments.Add(cmdArg);
 						}
 						// TODO: handle duplicates here
-						Debug.Assert(!ResolvedCommands.TryAdd(cmd.Name, cmd), "Duplicate commands not supported yet!");
+						let addTry = ResolvedCommands.TryAdd(cmd.Name, cmd);
+
+						Debug.Assert(addTry, "Duplicate commands not supported yet!");
 					}
 				}
 				else
@@ -157,12 +159,17 @@ namespace CommanderFX
 
 					for (let param in splitEnum)
 					{
-						argsStr.Add(scope $"{param}");
+						argsStr.Add(param);
 					}
 
 					if (argsCount != argsStr.Count)
 						return .Err(.InvalidNumberOfArguments(argsCount, argsStr.Count));// Invalid number of arguments
 					// from user
+
+					cmd.Module.Get<CommandBase>().[Friend]ctx = scope CommandContext()
+						{
+							AvailableCommands = ResolvedCommands
+						};
 
 					if (argsCount == 0)
 						if (cmd(null) case .Err(let err))
@@ -198,6 +205,8 @@ namespace CommanderFX
 							return .Err(.NoConverterForArgumentType(arg.Type));
 						}
 					}
+
+
 
 					if (cmd(parsedArgs) case .Err(let err))
 						return .Err(.CallingError(err));
