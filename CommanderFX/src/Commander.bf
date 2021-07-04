@@ -41,6 +41,13 @@ namespace CommanderFX
 			delete Modules;
 		}
 
+		public Commander RegisterConverter<T>() where T : new, class, IArgumentConverter
+		{
+
+
+			return this;
+		}
+
 		public Commander RegisterModule<T>() where T : new, class, CommandBase
 		{
 			return RegisterModule<T>(null);

@@ -35,5 +35,76 @@ namespace CommanderFX.Test
 			cmder.RegisterModule<CustomNamesCommands>();
 			cmder.ProccessCommandInput("Help");
 		}
+
+		[Test(ShouldFail = true)]
+		public static void T_InvalidCommandFail()
+		{
+			let cmder = scope Commander();
+			cmder.RegisterModule<ServerCommands>();
+			if (cmder.ProccessCommandInput("Help") case .Err(let err))
+			{
+				switch (err)
+				{
+				case .CommandNotFound:
+					Test.Assert(false);
+				default:
+					return;
+				}
+			}
+		}
+
+		[Test(ShouldFail = true)]
+		public static void T_InvalidCommandArgumentsParsingFail()
+		{
+			let cmder = scope Commander();
+			cmder.RegisterModule<ServerCommands>();
+			if (cmder.ProccessCommandInput("Sum Sheesh Yeet") case .Err(let err))
+			{
+				switch (err)
+				{
+				case .ParsingError:
+					Test.Assert(false);
+				default:
+					return;
+				}
+			}
+		}
+
+		[Test(ShouldFail = true)]
+		public static void T_InvalidCommandArgumentsCountFail()
+		{
+			let cmder = scope Commander();
+			cmder.RegisterModule<ServerCommands>();
+			if (cmder.ProccessCommandInput("Sum 14") case .Err(let err))
+			{
+				switch (err)
+				{
+				case .InvalidNumberOfArguments(let expected, let got):
+					if (expected == 2 && got == 1)
+						Test.Assert(false);
+				default:
+					return;
+				}
+			}
+		}
+
+		[Test(ShouldFail = true)]
+		public static void T_InvalidUnsupportedArgumentFail()
+		{
+			let cmder = scope Commander();
+			cmder.RegisterModule<CommandsCustomArgumentTypes>();
+			if (cmder.ProccessCommandInput("CustomFunc lmao") case .Err(let err))
+			{
+				switch (err)
+				{
+				case .NoConverterForArgumentType(let type):
+					let tmp = typeof(CustomType);
+					if (type == tmp)
+						Test.Assert(false);
+				default:
+					return;
+				}
+			}
+		}
 	}
 }

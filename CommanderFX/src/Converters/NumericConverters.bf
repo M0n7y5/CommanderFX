@@ -1,27 +1,17 @@
 using System;
 namespace CommanderFX.Converters
 {
-	class BoolConv : IArgumentConverter<bool>
+	class BoolConv : BaseConverter<bool>
 	{
-		public Result<bool> Convert(StringView value)
+		public override Result<bool> Convert(StringView value)
 		{
 			return bool.Parse(value);
 		}
-
-		public Result<Variant> ConvertVar(StringView value)
-		{
-			if (let result = Convert(value))
-			{
-				return .Ok(.Create(result));
-			}
-			else
-				return .Err;
-		}
 	}
 
-	class IntConv<T> : IArgumentConverter<T> where T : IInteger
+	class IntConv<T> : BaseConverter<T> where T : IInteger
 	{
-		public Result<T> Convert(StringView value)
+		public override Result<T> Convert(StringView value)
 		{
 			let max = Variant.Create(typeof(T).MaxValue).Get<int>();
 			let min = Variant.Create(typeof(T).MinValue).Get<int>();
@@ -35,16 +25,6 @@ namespace CommanderFX.Converters
 			}
 
 			return .Err;
-		}
-
-		public Result<Variant> ConvertVar(StringView value)
-		{
-			if (let result = Convert(value))
-			{
-				return .Ok(.Create(result));
-			}
-			else
-				return .Err;
 		}
 	}
 }

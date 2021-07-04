@@ -4,7 +4,6 @@ namespace CommanderFX.Test.Commands
 {
 	class CommandsWithContext : CommandBase
 	{
-		
 		[Command, Description("Show available commands.")]
 		public void Help()
 		{
