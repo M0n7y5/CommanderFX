@@ -7,9 +7,11 @@ namespace CommanderFX.Entities
 
 		public Type Type { get; private set; }
 
-		public bool isArray { get => this.Type.IsArray; }
+		public bool IsArray { get => this.Type.IsArray; }
 
-		public bool isOptional { get; private set; }
+		public bool IsOptional { get; private set; }
+
+		public bool IsRemainingText { get; private set; }
 
 		public Object DefaultValue { get; private set; }
 

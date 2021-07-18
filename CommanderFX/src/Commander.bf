@@ -7,6 +7,7 @@ using CommanderFX.Attributes;
 using System.Collections;
 using CommanderFX.Converters;
 using CommanderFX.Enums;
+using CommanderFX.DependencyInjection;
 using static System.Reflection.MethodInfo;
 namespace CommanderFX
 {
@@ -14,6 +15,7 @@ namespace CommanderFX
 	//TODO: Implement method overload support
 	class Commander
 	{
+		IServiceProviderAdapter ServiceAdapter;
 		private Dictionary<StringView, Command> ResolvedCommands = new .();
 		private Dictionary<int, Variant> Modules = new .();
 		private Dictionary<Type, IArgumentConverter> ArgumentConverters = new .()
@@ -32,6 +34,8 @@ namespace CommanderFX
 				(typeof(StringView), new StringViewConverter())
 			};
 
+
+
 		public ~this()
 		{
 			DeleteDictionaryAndValues!(ArgumentConverters);
@@ -41,10 +45,15 @@ namespace CommanderFX
 			delete Modules;
 		}
 
-		public Commander RegisterConverter<T>() where T : new, class, IArgumentConverter
+		public Commander RegisterConverter<TType, T>()
+			where T : new, class, IArgumentConverter
 		{
+			if (ArgumentConverters.ContainsKey(typeof(T)))
+			{
+				Runtime.FatalError("Converter is already registered for this type!");
+			}
 
-
+			ArgumentConverters.Add(typeof(TType), new T());
 			return this;
 		}
 
@@ -113,14 +122,19 @@ namespace CommanderFX
 							cmdArg.[Friend]Name = method.GetParamName(idx);
 							cmdArg.[Friend]Type = method.GetParamType(idx);
 
-							if (let argOpt = cmdArg.Type.GetCustomAttribute<OptionalAttribute>())
+							if (let _ = method.GetParamCustomAttribute<OptionalAttribute>(idx))
 							{
-								cmdArg.[Friend]isOptional = true;
+								cmdArg.[Friend]IsOptional = true;
 							}
 
-							if (let argDesc = cmdArg.Type.GetCustomAttribute<DescriptionAttribute>())
+							if (let argDesc = method.GetParamCustomAttribute<DescriptionAttribute>(idx))
 							{
 								cmdArg.[Friend]Description = argDesc.description;
+							}
+
+							if (let test = method.GetParamCustomAttribute<RemainingTextAttribute>(idx))
+							{
+								cmdArg.[Friend]IsRemainingText = true;
 							}
 
 							cmd.Arguments.Add(cmdArg);
@@ -138,68 +152,78 @@ namespace CommanderFX
 			return this;
 		}
 
-		//TODO: Implement dependency injection
-		/*public Commander AddSingletonDep<T>(T dep)
+		public Commander RegisterDependencyResolver(IServiceProviderAdapter adapter)
 		{
+			if(ServiceAdapter != null)
+				Runtime.FatalError("");
+			this.ServiceAdapter = adapter;
 			return this;
 		}
-		
-		//TODO: Implement dependency injection
-		public Commander AddTransientDep<T>()
-		{
-			return this;
-		}*/
 
 		public Result<void, InvokeError> ProccessCommandInput(StringView input)
 		{
 			//TODO: Handle calling error internally
-
+			int inputStrCursor = 0;
 			var splitEnum = input.Split(' ');
 			if (let cmdName = splitEnum.GetNext())
 			{
 				Command cmd;
 				if (ResolvedCommands.TryGetValue(cmdName, out cmd))
 				{
+					inputStrCursor += cmdName.Length + 1/*whitespace*/;
+
 					let argsCount = cmd.Arguments.Count;
 
-					List<StringView> argsStr = scope List<StringView>();
-
-					for (let param in splitEnum)
+					if (argsCount == 0)// no args?, just invoke then
 					{
-						argsStr.Add(param);
-					}
+						cmd.Module.Get<CommandBase>().[Friend]ctx = scope CommandContext()
+							{
+								AvailableCommands = ResolvedCommands
+							};
 
-					if (argsCount != argsStr.Count)
-						return .Err(.InvalidNumberOfArguments(argsCount, argsStr.Count));// Invalid number of arguments
-					// from user
-
-					cmd.Module.Get<CommandBase>().[Friend]ctx = scope CommandContext()
-						{
-							AvailableCommands = ResolvedCommands
-						};
-
-					if (argsCount == 0)
 						if (cmd(null) case .Err(let err))
 							return .Err(.CallingError(err));
 						else
 							return .Ok;
+					}
+
+					List<StringView> argsStr = scope List<StringView>();
+
+					var tmpEnumm = cmd.Arguments.GetEnumerator();
+
+					for (let param in splitEnum)
+					{
+						if (let cmdd = tmpEnumm.GetNext())
+						{
+							if (cmdd.IsRemainingText)
+							{
+								var remainText = StringView(param.Ptr);
+								argsStr.Add(remainText);
+
+								break;
+							}
+
+							argsStr.Add(param);
+						}
+					}
 
 					Variant[] parsedArgs = scope Variant[cmd.Arguments.Count];
 					defer// deferred execution
 					{
 						for (var pArg in parsedArgs)
-							pArg.Dispose();// dispose it right away
+							pArg.Dispose();// dispose parsed objects right away
 						// cuz if object is bigger than int then its allocated
 						// and owned by us (and thats gay ngl)
 					}
 
-					var idx = 0;
-					for (let arg in cmd.Arguments)
+					int idx = 0;
+					StringView str = .();
+					for (var arg in cmd.Arguments)
 					{
+						str = argsStr[idx];
+
 						if (let conv = ArgumentConverters.GetValue(arg.Type))
 						{
-							let str = argsStr[idx];
-
 							if (let converted = conv.ConvertVar(str))
 							{
 								parsedArgs[idx++] = converted;
@@ -213,7 +237,14 @@ namespace CommanderFX
 						}
 					}
 
+					// Invalid number of arguments from user
+					if (argsCount != argsStr.Count)
+						return .Err(.InvalidNumberOfArguments(argsCount, argsStr.Count));
 
+					cmd.Module.Get<CommandBase>().[Friend]ctx = scope CommandContext()
+						{
+							AvailableCommands = ResolvedCommands
+						};
 
 					if (cmd(parsedArgs) case .Err(let err))
 						return .Err(.CallingError(err));

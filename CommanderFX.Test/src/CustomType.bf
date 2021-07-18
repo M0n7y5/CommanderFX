@@ -1,6 +1,9 @@
 using System;
+using CommanderFX.Attributes;
 namespace CommanderFX.Test
 {
+		
+	
 	class CustomType
 	{
 		public int field1;

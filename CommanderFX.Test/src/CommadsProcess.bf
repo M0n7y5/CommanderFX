@@ -1,5 +1,6 @@
 using System;
 using CommanderFX.Test.Commands;
+using CommanderFX.Test.Converter;
 namespace CommanderFX.Test
 {
 	class CommadsProcess
@@ -93,7 +94,7 @@ namespace CommanderFX.Test
 		{
 			let cmder = scope Commander();
 			cmder.RegisterModule<CommandsCustomArgumentTypes>();
-			if (cmder.ProccessCommandInput("CustomFunc lmao") case .Err(let err))
+			if (cmder.ProccessCommandInput("CustomFunc 98 99 false 35 12 true") case .Err(let err))
 			{
 				switch (err)
 				{
@@ -106,5 +107,17 @@ namespace CommanderFX.Test
 				}
 			}
 		}
+
+		[Test]
+		public static void T_CustomTypeConverter()
+		{
+			let cmder = scope Commander();
+			cmder.RegisterModule<CommandsCustomArgumentTypes>();
+
+			cmder.RegisterConverter<CustomType, CustomTypeConverter>();
+
+			cmder.ProccessCommandInput("CustomFunc 98 99 false 35 12 true");
+		}
+
 	}
 }
