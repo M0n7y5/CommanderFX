@@ -1,9 +1,11 @@
 using System;
 namespace CommanderFX.Converters
 {
-	abstract class BaseConverter<T> : IArgumentConverter, IArgumentConverter<T>
+	abstract class BaseConverter<T> : IArgumentConverter, IArgumentConverter<T> 
 	{
-		public Result<Variant> ConvertVar(StringView value)
+		public abstract Result<Variant> ConvertVar(StringView value);
+
+		/*public Result<Variant> ConvertVar(StringView value)
 		{
 			if (let result = Convert(value))
 			{
@@ -11,7 +13,7 @@ namespace CommanderFX.Converters
 			}
 			else
 				return .Err;
-		}
+		}*/
 
 		public abstract Result<T> Convert(StringView value);
 	}

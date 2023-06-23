@@ -2,7 +2,8 @@ using System.Collections;
 using System.FFI;
 namespace System.Reflection
 {
-	extension MethodInfo
+
+	/*extension MethodInfo
 	{
 		public Result<Variant, CallError> Invoke(Object target, Object[] args)
 		{
@@ -337,5 +338,5 @@ namespace System.Reflection
 			return retVal;
 		}
 
-	}
+	}*/
 }

@@ -7,9 +7,19 @@ namespace CommanderFX.Converters
 		{
 			return bool.Parse(value);
 		}
+
+		public override Result<Variant> ConvertVar(StringView value)
+		{
+			if (let result = Convert(value))
+			{
+				return .Ok(.Create(result));
+			}
+			else
+				return .Err;
+		}
 	}
 
-	class IntConv<T> : BaseConverter<T> where T : IInteger
+	class IntConv<T> : BaseConverter<T> where T : IInteger, struct
 	{
 		public override Result<T> Convert(StringView value)
 		{
@@ -25,6 +35,16 @@ namespace CommanderFX.Converters
 			}
 
 			return .Err;
+		}
+
+		public override Result<Variant> ConvertVar(StringView value)
+		{
+			if (let result = Convert(value))
+			{
+				return .Ok(.Create(result));
+			}
+			else
+				return .Err;
 		}
 	}
 }

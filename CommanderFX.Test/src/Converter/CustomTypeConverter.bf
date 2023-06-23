@@ -33,10 +33,20 @@ namespace CommanderFX.Test.Converter
 				}
 			}
 
-			if(idx != 3)
+			if (idx != 3)
 				return .Err; //invalid argument count
 
 			return .Ok(result);
+		}
+
+		public override Result<Variant> ConvertVar(StringView value)
+		{
+			if (let result = Convert(value))
+			{
+				return .Ok(.Create(result));
+			}
+			else
+				return .Err;
 		}
 	}
 }

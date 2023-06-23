@@ -11,6 +11,16 @@ namespace CommanderFX.Converters
 		{
 			return .Ok(value);
 		}
+
+		public override Result<Variant> ConvertVar(StringView value)
+		{
+			if (let result = Convert(value))
+			{
+				return .Ok(.Create(result));
+			}
+			else
+				return .Err;
+		}
 	}
 
 	/*class StringConverter : IArgumentConverter<String>
