@@ -18,7 +18,7 @@ namespace CommanderFX.Test.Commands
 
 		[Command, Description("Print global server message.")]
 		public void Say(
-			[RemainingText, /*Description("Message that will be displayed"),*/ Optional]
+			[RemainingText, Description("Message that will be displayed"), Optional]
 			StringView message = "Sheeesh")
 		{
 			Console.WriteLine(scope $"Messsage from server: {message}");

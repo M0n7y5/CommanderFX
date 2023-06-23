@@ -1,7 +1,7 @@
 using System;
 namespace CommanderFX.Attributes
 {
-	[AttributeUsage(.Parameter | .Class, .AlwaysIncludeTarget | .DisallowAllowMultiple | .ReflectAttribute)]
+	[AttributeUsage(.Parameter , .AlwaysIncludeTarget | .DisallowAllowMultiple | .ReflectAttribute)]
 	struct RemainingTextAttribute : Attribute
 	{
 	}
